@@ -3,9 +3,64 @@ import 'package:provider/provider.dart';
 import '../services/user_service.dart';
 import '../utils/theme.dart';
 import '../widgets/feature_card.dart';
+import '../widgets/branch_selector.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  String _selectedBranch = '';
+  
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..forward();
+  }
+  
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onBranchSelected(String branch) {
+    setState(() {
+      _selectedBranch = branch;
+    });
+    // Here you could filter content based on selected branch
+    if (branch.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Selected branch: $branch'),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+  
+  // Helper method to create staggered delay effect
+  double _staggeredDelay(int index, double baseValue) {
+    // Each item will start after a short delay compared to the previous one
+    final itemDelay = 0.1 * index;
+    final adjustedValue = baseValue - itemDelay;
+    
+    // Ensure we don't return negative values
+    if (adjustedValue <= 0) return 0;
+    
+    // Ensure we don't exceed 1.0
+    if (adjustedValue >= 1) return 1.0;
+    
+    return adjustedValue;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,55 +169,70 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo and welcome message
-                  Row(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: MilitaryTheme.navy.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            'assets/images/Military Buddy Logo.png',
-                            fit: BoxFit.cover,
+                  // Logo and welcome message with hero animation from splash
+                  AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      // Add a slide-in animation effect
+                      return Transform.translate(
+                        offset: Offset(0, 20 * (1 - _animationController.value)),
+                        child: Opacity(
+                          opacity: _animationController.value,
+                          child: Row(
+                            children: [
+                              Hero(
+                                tag: 'app_logo',
+                                child: Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: MilitaryTheme.navy.withOpacity(0.2),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.asset(
+                                      'assets/images/Military Buddy Logo.png',
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Welcome${userService.username != null ? ', ${userService.username}' : ''}',
+                                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                        color: MilitaryTheme.navy,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 26,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'Your journey to military success starts here',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.grey[600],
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome${userService.username != null ? ', ${userService.username}' : ''}',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: MilitaryTheme.navy,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 26,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Your journey to military success starts here',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.grey[600],
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
                   
@@ -236,16 +306,53 @@ class HomeScreen extends StatelessWidget {
                   
                   const SizedBox(height: 30),
                   
-                  // Featured card
-                  FeatureCard(
-                    title: 'ASVAB Preparation',
-                    subtitle: 'Practice tests and study materials to boost your score',
-                    icon: Icons.quiz_outlined,
-                    color: MilitaryTheme.red,
-                    featured: true,
-                    onTap: () {
-                      Navigator.pushNamed(context, '/asvab');
-                    },
+                  // Branch selector with staggered animation
+                  AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      final delayedValue = _animationController.value < 0.3 
+                          ? 0.0 
+                          : (_animationController.value - 0.3) / 0.7;
+                      
+                      return Opacity(
+                        opacity: delayedValue,
+                        child: Transform.translate(
+                          offset: Offset(0, 20 * (1 - delayedValue)),
+                          child: BranchSelector(
+                            onBranchSelected: _onBranchSelected,
+                          ),
+                        ),
+                      );
+                    }
+                  ),
+                  
+                  const SizedBox(height: 30),
+                  
+                  // Featured card with animation
+                  AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      final delayedValue = _animationController.value < 0.4 
+                          ? 0.0 
+                          : (_animationController.value - 0.4) / 0.6;
+                      
+                      return Opacity(
+                        opacity: delayedValue,
+                        child: Transform.translate(
+                          offset: Offset(0, 20 * (1 - delayedValue)),
+                          child: FeatureCard(
+                            title: 'ASVAB Preparation',
+                            subtitle: 'Practice tests and study materials to boost your score',
+                            icon: Icons.quiz_outlined,
+                            color: MilitaryTheme.red,
+                            featured: true,
+                            onTap: () {
+                              Navigator.pushNamed(context, '/asvab');
+                            },
+                          ),
+                        ),
+                      );
+                    }
                   ),
                   
                   const SizedBox(height: 24),
@@ -263,124 +370,175 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   
-                  // Grid of feature cards
-                  GridView.count(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1.4,
-                    children: [
-                      // Career Explorer
-                      FeatureCard(
-                        title: 'Careers',
-                        subtitle: 'Explore military jobs',
-                        icon: Icons.work_outline,
-                        color: MilitaryTheme.navy,
-                        onTap: () {
-                          Navigator.pushNamed(context, '/careers');
-                        },
-                      ),
+                  // Grid of feature cards with staggered animations
+                  AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      final delayedValue = _animationController.value < 0.5 
+                          ? 0.0 
+                          : (_animationController.value - 0.5) / 0.5;
                       
-                      // AI Tutor
-                      FeatureCard(
-                        title: 'AI Tutor',
-                        subtitle: 'Get personalized help',
-                        icon: Icons.smart_toy_outlined,
-                        color: MilitaryTheme.steelBlue,
-                        onTap: () {
-                          Navigator.pushNamed(context, '/tutor');
-                        },
-                      ),
-                      
-                      // Recruiter Finder
-                      FeatureCard(
-                        title: 'Recruiters',
-                        subtitle: 'Find local offices',
-                        icon: Icons.place_outlined,
-                        color: MilitaryTheme.gray,
-                        onTap: () {
-                          Navigator.pushNamed(context, '/recruiters');
-                        },
-                      ),
-                      
-                      // Pay Calculator
-                      FeatureCard(
-                        title: 'Pay Calculator',
-                        subtitle: 'Estimate your salary',
-                        icon: Icons.attach_money,
-                        color: Colors.green.shade700,
-                        onTap: () {
-                          Navigator.pushNamed(context, '/pay');
-                        },
-                      ),
-                    ],
+                      return Opacity(
+                        opacity: delayedValue,
+                        child: GridView.count(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.6,
+                          children: [
+                            // Career Explorer with staggered delay
+                            Transform.translate(
+                              offset: Offset(0, 15 * (1 - _staggeredDelay(0, delayedValue))),
+                              child: Opacity(
+                                opacity: _staggeredDelay(0, delayedValue),
+                                child: FeatureCard(
+                                  title: 'Careers',
+                                  subtitle: 'Explore military jobs',
+                                  icon: Icons.work_outline,
+                                  color: MilitaryTheme.navy,
+                                  onTap: () {
+                                    Navigator.pushNamed(context, '/careers');
+                                  },
+                                ),
+                              ),
+                            ),
+                            
+                            // AI Tutor with staggered delay
+                            Transform.translate(
+                              offset: Offset(0, 15 * (1 - _staggeredDelay(1, delayedValue))),
+                              child: Opacity(
+                                opacity: _staggeredDelay(1, delayedValue),
+                                child: FeatureCard(
+                                  title: 'AI Tutor',
+                                  subtitle: 'Get personalized help',
+                                  icon: Icons.smart_toy_outlined,
+                                  color: MilitaryTheme.steelBlue,
+                                  onTap: () {
+                                    Navigator.pushNamed(context, '/tutor');
+                                  },
+                                ),
+                              ),
+                            ),
+                            
+                            // Recruiter Finder with staggered delay
+                            Transform.translate(
+                              offset: Offset(0, 15 * (1 - _staggeredDelay(2, delayedValue))),
+                              child: Opacity(
+                                opacity: _staggeredDelay(2, delayedValue),
+                                child: FeatureCard(
+                                  title: 'Recruiters',
+                                  subtitle: 'Find local offices',
+                                  icon: Icons.place_outlined,
+                                  color: MilitaryTheme.gray,
+                                  onTap: () {
+                                    Navigator.pushNamed(context, '/recruiters');
+                                  },
+                                ),
+                              ),
+                            ),
+                            
+                            // Pay Calculator with staggered delay
+                            Transform.translate(
+                              offset: Offset(0, 15 * (1 - _staggeredDelay(3, delayedValue))),
+                              child: Opacity(
+                                opacity: _staggeredDelay(3, delayedValue),
+                                child: FeatureCard(
+                                  title: 'Pay Calculator',
+                                  subtitle: 'Estimate your salary',
+                                  icon: Icons.attach_money,
+                                  color: Colors.green.shade700,
+                                  onTap: () {
+                                    Navigator.pushNamed(context, '/pay');
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                   
                   const SizedBox(height: 24),
                   
-                  // Help & Support card
-                  Card(
-                    elevation: 0,
-                    color: MilitaryTheme.lightGray,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        _showHelpDialog(context);
-                      },
-                      borderRadius: BorderRadius.circular(16),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 46,
-                              height: 46,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.help_outline,
-                                color: MilitaryTheme.navy,
-                                size: 26,
-                              ),
+                  // Help & Support card with animation
+                  AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      final delayedValue = _animationController.value < 0.6 
+                          ? 0.0 
+                          : (_animationController.value - 0.6) / 0.4;
+                      
+                      return Opacity(
+                        opacity: delayedValue,
+                        child: Transform.translate(
+                          offset: Offset(0, 15 * (1 - delayedValue)),
+                          child: Card(
+                            elevation: 0,
+                            color: MilitaryTheme.lightGray,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            const SizedBox(width: 16),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Need Help?',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: MilitaryTheme.navy,
-                                  ),
+                            child: InkWell(
+                              onTap: () {
+                                _showHelpDialog(context);
+                              },
+                              borderRadius: BorderRadius.circular(16),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 46,
+                                      height: 46,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(
+                                        Icons.help_outline,
+                                        color: MilitaryTheme.navy,
+                                        size: 26,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Need Help?',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: MilitaryTheme.navy,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Check our guide and FAQ',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const Spacer(),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: Colors.grey[400],
+                                      size: 16,
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Check our guide and FAQ',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                            const Spacer(),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              color: Colors.grey[400],
-                              size: 16,
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }
                   ),
                   
                   const SizedBox(height: 30),

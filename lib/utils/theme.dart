@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'dart:io' show Platform;
 
 class MilitaryTheme {
   // Primary colors
@@ -59,6 +61,15 @@ class MilitaryTheme {
     end: Alignment.bottomRight,
   );
 
+  // Platform-specific colors and values
+  static final bool isIOS = Platform.isIOS;
+  static final EdgeInsets safePadding = EdgeInsets.only(
+    bottom: isIOS ? 34.0 : 16.0,
+    top: isIOS ? 47.0 : 16.0,
+  );
+  static final double borderRadius = isIOS ? 12.0 : 8.0;
+  static final double cardElevation = isIOS ? 0.0 : 3.0;
+  
   // Text styles
   static TextStyle headingLarge = const TextStyle(
     fontSize: 28,
@@ -166,4 +177,34 @@ class MilitaryTheme {
     backgroundColor: spaceForce,
     foregroundColor: Colors.white,
   );
+  
+  // Create Cupertino theme data for iOS
+  static CupertinoThemeData getCupertinoTheme() {
+    return const CupertinoThemeData(
+      primaryColor: navy,
+      primaryContrastingColor: Colors.white,
+      barBackgroundColor: navy,
+      scaffoldBackgroundColor: offWhite,
+      textTheme: CupertinoTextThemeData(
+        primaryColor: navy,
+        navTitleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 20.0,
+          fontWeight: FontWeight.w600,
+        ),
+        navLargeTitleTextStyle: TextStyle(
+          color: navy,
+          fontSize: 28.0,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+  
+  // Platform-specific navigation bar height
+  static double get navigationBarHeight => isIOS ? 44.0 : 56.0;
+  
+  // Platform-specific navigation styles
+  static EdgeInsets get navigationPadding => 
+      isIOS ? const EdgeInsets.symmetric(horizontal: 16.0) : const EdgeInsets.symmetric(horizontal: 8.0);
 }
