@@ -1,0 +1,44 @@
+name: military_buddy
+description: A comprehensive app to help users explore U.S. military careers, prepare for ASVAB, receive AI tutoring, and more.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.19.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.5
+  provider: ^6.0.5
+  http: ^0.13.6
+  shared_preferences: ^2.1.1
+  flutter_map: ^4.0.0
+  latlong2: ^0.8.2
+  geolocator: ^9.0.2
+  google_fonts: ^4.0.4
+  # Temporarily removed due to compatibility issues
+  # fl_chart: ^0.55.0
+  lottie: ^2.4.0
+  intl: ^0.18.1
+  cached_network_image: ^3.2.3
+  flutter_launcher_icons: ^0.14.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/Military Buddy Logo.png"
+  adaptive_icon_background: "#0A1E3C"
+  adaptive_icon_foreground: "assets/images/Military Buddy Logo.png"
+  remove_alpha_ios: true
+  min_sdk_android: 21
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/animations/
