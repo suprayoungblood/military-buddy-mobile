@@ -182,6 +182,13 @@ class _MilitaryBuddyAppState extends State<MilitaryBuddyApp> with TickerProvider
       title: 'Military Buddy',
       debugShowCheckedModeBanner: false,
       theme: MilitaryTheme.getCupertinoTheme(),
+      // Add localization support for MaterialLocalizations
+      localizationsDelegates: const [
+        // Material localization needed for bottom navigation
+        DefaultMaterialLocalizations.delegate,
+        DefaultCupertinoLocalizations.delegate,
+        DefaultWidgetsLocalizations.delegate,
+      ],
       home: _showSplash 
         ? _buildSplashScreen() 
         : _buildCupertinoHome(),
@@ -241,7 +248,6 @@ class _MilitaryBuddyAppState extends State<MilitaryBuddyApp> with TickerProvider
         }
       },
     );
-  }
   }
   
   Widget _buildSplashScreen() {

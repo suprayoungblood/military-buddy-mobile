@@ -65,7 +65,7 @@ class FeatureCard extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(ResponsiveUtils.adaptiveSize(10.0)),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -120,7 +120,7 @@ class FeatureCard extends StatelessWidget {
                         fontSize: subtitleSize,
                         color: featured ? Colors.white.withOpacity(0.8) : Colors.grey[600],
                       ),
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
